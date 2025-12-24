@@ -30,7 +30,7 @@ type SmtpConfig struct {
 type Scheduler struct {
 	cron       *cron.Cron
 	queue      []EmailData
-	mu         sync.Mutex // protects queue
+	mu         sync.Mutex
 	smtpConfig SmtpConfig
 	location   *time.Location
 }
@@ -59,7 +59,7 @@ func NewScheduler(config SmtpConfig, schedule string) *Scheduler {
 
 func (s *Scheduler) Start() {
 	s.cron.Start()
-	log.Println("Scheduler started (checking queue every minute)")
+	log.Println("Scheduler started")
 }
 
 func (s *Scheduler) CalculateScheduleTime(now time.Time) time.Time {
@@ -126,7 +126,7 @@ func (s *Scheduler) sendBatch(emails []EmailData) {
 
 		log.Printf("Sending email to %s...", email.To)
 
-		if s.smtpConfig.Password == "" || s.smtpConfig.MockMode {
+		if s.smtpConfig.MockMode {
 			log.Println("[MOCK] SendMail Success")
 		} else {
 			err := smtp.SendMail(addr, auth, s.smtpConfig.From, []string{email.To}, msg)
